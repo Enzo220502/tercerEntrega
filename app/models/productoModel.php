@@ -10,6 +10,13 @@ class productoModel extends Model{
         $productos = $query->fetchAll(PDO::FETCH_OBJ);
         return $productos;
     }
+
+    public function obtenerProductosOrdenado($concat){
+        $query = $this->db->prepare("SELECT * FROM  productos ".$concat);
+        $query->execute([]);
+        $productos = $query->fetchAll(PDO::FETCH_OBJ);
+        return $productos;
+    }
     
     public function obtenerUnProductoPorId($id){
         $query = $this->db->prepare("SELECT * FROM `productos` INNER JOIN `categorias` ON productos.id_categoria = categorias.id WHERE productos.ID = ?");
