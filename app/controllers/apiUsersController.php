@@ -14,15 +14,15 @@ class UserApiController extends ApiController{
         $this->helper = new AuthHelper();
     }
 
-    function getToken($params = []) {
-        $basic = $this->helper->getAuthHeaders();
+    function obtenerToken($params = []) {
+        $basic = $this->helper->obtenerAuthHeaders();
 
         if(empty($basic)) {
             $this->view->response('No envió encabezados de autenticación.', 401);
             return;
         }
 
-        $basic = explode(" ", $basic); // ["Basic", "base64(usr:pass)"]
+        $basic = explode(" ", $basic); // quedaria ["Basic", "base64(usr:pass)"]
 
         if($basic[0]!="Basic") {
             $this->view->response('Los encabezados de autenticación son incorrectos.', 401);
@@ -36,11 +36,11 @@ class UserApiController extends ApiController{
         $password = $userpass[1];
 
         
-        $user = $this->model->obtenerUsuario($nombreUsuario);
-        
-        if($user&&password_verify($password,$user->clave)) {
-            $userdata = [ "nombre" => $user->nombre, "id" => $user->id];
-            $token = $this->helper->createToken($userdata);
+        $usuario = $this->model->obtenerUsuario($nombreUsuario);
+
+        if($usuario&&password_verify($password,$usuario->clave)) {
+            $usuario = [ "nombre" => $usuario->nombre, "id" => $usuario->id];
+            $token = $this->helper->crearToken($usuario);
             $this->view->response($token,200);
             return;
         } else {

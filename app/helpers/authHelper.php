@@ -6,62 +6,61 @@
     }
 
     class AuthHelper {
-        function getAuthHeaders() {
-            $header = "";
+        
+        function obtenerAuthHeaders() {
+            $encabezado = "";
             if(isset($_SERVER['HTTP_AUTHORIZATION']))
-                $header = $_SERVER['HTTP_AUTHORIZATION'];
+                $encabezado = $_SERVER['HTTP_AUTHORIZATION'];
             if(isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']))
-                $header = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
-            return $header;
+                $encabezado = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+            return $encabezado;
         }
 
-        function createToken($payload) {
-            $header = array(
+        function crearToken($cuerpo) {
+            $encabezado = array(
                 'alg' => 'HS256',
                 'typ' => 'JWT'
             );
-            
-            //$payload['exp'] = time() + JWT_EXP;
 
-            $header = base64url_encode(json_encode($header));
-            $payload = base64url_encode(json_encode($payload));
+            $encabezado = base64url_encode(json_encode($encabezado));
+            $cuerpo = base64url_encode(json_encode($cuerpo));
             
-            $signature = hash_hmac('SHA256', "$header.$payload", JWT_KEY, true);
-            $signature = base64url_encode($signature);
+            $firma = hash_hmac('SHA256', "$encabezado.$cuerpo", JWT_KEY, true);
+            $firma = base64url_encode($firma);
 
-            $token = "$header.$payload.$signature";
+            $token = "$encabezado.$cuerpo.$firma";
             
             return $token;
         }
 
-        function verify($token) {
-            // $header.$payload.$signature
+        function verificarToken($token) {
+            // $encabezado.$cuerpo.$firma
 
-            $token = explode(".", $token); // [$header, $payload, $signature]
-            $header = $token[0];
-            $payload = $token[1];
-            $signature = $token[2];
+            $token = explode(".", $token); // [$encabezado, $cuerpo, $firma]
+            $encabezado = $token[0];
+            $cuerpo = $token[1];
+            $firma = $token[2];
 
-            $new_signature = hash_hmac('SHA256', "$header.$payload", JWT_KEY, true);
-            $new_signature = base64url_encode($new_signature);
+            $firmaNueva = hash_hmac('SHA256', "$encabezado.$cuerpo", JWT_KEY, true);
+            $firmaNueva = base64url_encode($firmaNueva);
 
-            if($signature!=$new_signature) {
+            if($firma!=$firmaNueva) {
                 return false;
             }
 
-            $payload = json_decode(base64_decode($payload));
+            $cuerpo = json_decode(base64_decode($cuerpo));
 
-            return $payload;
+            return $cuerpo;
         }
 
-        function currentUser() {
-            $auth = $this->getAuthHeaders(); // "Bearer $token"
+        function verificarCliente() {
+            $auth = $this->obtenerAuthHeaders(); // "Bearer $token"
             $auth = explode(" ", $auth); // ["Bearer", "$token"]
 
             if($auth[0] != "Bearer") {
                 return false;
             }
 
-            return $this->verify($auth[1]); // Si está bien nos devuelve el payload
+            return $this->verificarToken($auth[1]); // Si está bien nos devuelve el payload
         }
     }
