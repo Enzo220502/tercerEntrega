@@ -3,7 +3,6 @@ require_once 'model.php';
 
 class productoModel extends Model{
 
-
     public function obtenerProductos() {
         $query = $this->db->prepare("SELECT * FROM productos INNER JOIN categorias ON productos.id_categoria = categorias.id");
         $query->execute();
@@ -11,9 +10,16 @@ class productoModel extends Model{
         return $productos;
     }
 
-    public function obtenerProductosOrdenado($concat){
-        $query = $this->db->prepare("SELECT * FROM  productos ".$concat);
-        $query->execute([]);
+    public function obtenerCampos(){
+        $query = $this->db->prepare("SHOW FIELDS FROM productos");
+        $query->execute();
+        $campos = $query->fetchAll(PDO::FETCH_OBJ);
+        return $campos;
+    }
+
+    public function obtenerProductosOrdenado($final){
+        $query = $this->db->prepare("SELECT * FROM  productos $final");
+        $query->execute();
         $productos = $query->fetchAll(PDO::FETCH_OBJ);
         return $productos;
     }

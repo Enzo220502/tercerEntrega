@@ -7,6 +7,7 @@ class ProductosApiController extends ApiController{
 
     private $model;
     private $auth;
+    private $camposProductos;
 
     function __construct(){
         parent::__construct();
@@ -14,81 +15,161 @@ class ProductosApiController extends ApiController{
         $this->auth = new AuthHelper();
     }
 
-    function obtener($params = []){
-        // DOMINIO DE LOS POSIBLES GET PARAMETERS
-        $camposProductos = ['ID','nombre','descripcion','precio','marca','id_categoria'];
-        $ordenes = ['ASC','DESC'];
-        
-        if(empty($params)){
-            if(isset($_GET['campo']) && isset($_GET['orden'])){
-                if(in_array($_GET['campo'],$camposProductos) && in_array(strtoupper($_GET['orden']),$ordenes)){
-                    $atributo = $_GET['campo'];
-                    $orden = strtoupper($_GET['orden']);
-                    
-                    //ORDER BY nombre ASC
-                    $concat = "ORDER BY $atributo $orden";
-                    
-                    $productos = $this->model->obtenerProductosOrdenado($concat);
+    function generarCampos(){
+        $this->camposProductos = [];
+        $aux = $this->model->obtenerCampos();
+        for($i = 0;$i<count($aux);$i++){
+            array_push($this->camposProductos,$aux[$i]->Field);
+        }
+        return $this->camposProductos;
+    }
 
-                    if($productos){
-                        $this->view->response($productos,200);
-                        return;
-                    }else{
-                        $this->view->response("No hemos encontrado productos que contengan $atributo",404);
-                        return;
+    function obtener($params = []){
+
+        // DOMINIO DE LOS POSIBLES GET PARAMETERS
+        $this->generarCampos();
+        $ordenes = ['ASC','DESC'];
+        $final = null;
+
+        if(empty($params)){
+            if(isset($_GET['campo']) && isset($_GET['valor'])){
+
+                if(in_array($_GET['campo'],$this->camposProductos)){
+                    $campo = $_GET['campo'];
+                    $valor = $_GET['valor'];
+
+                    $final = "WHERE $campo = '$valor'";
+
+                    if(isset($_GET['ordenPor'])){
+                        if(in_array($_GET['ordenPor'],$this->camposProductos)){
+                            $ordenPor = $_GET['ordenPor'];
+                            if(isset($_GET['orden'])){
+                                $orden = null;
+                                if(in_array($_GET['orden'],$ordenes)){
+                                    $orden = $_GET['orden'];
+                                }else{
+                                    $orden = "ASC";
+                                }
+                            }
+
+                            $final .= " ORDER BY $ordenPor $orden ";
+
+                            if(isset($_GET['pagina'])){
+                                if(is_numeric($_GET['pagina'])){
+                                    $pagina = $_GET['pagina'];
+                                    
+                                    if(isset($_GET['limite']) && is_numeric($_GET['limite'])){
+                                        $limite = $_GET['limite'];
+                                    }else{
+                                        $limite = 3;
+                                    }
+
+                                    $inicio = ((int)$pagina - 1) * (int)$limite;
+                                    $final .= " LIMIT $inicio,$limite ";
+                                }else{
+                                    $this->view->response("Pagina invalida,por favor seleccione un valor numerico",400);
+                                    return;
+                                }
+                            }
+                        }else{
+                            $this->view->response("Orden invalido,por favor seleccione un orden adecuado",400);
+                            return;
+                        }
+                    }else if(isset($_GET['pagina'])){
+                        if(is_numeric($_GET['pagina'])){
+                            $pagina = $_GET['pagina'];
+                            
+                            if(isset($_GET['limite']) && is_numeric($_GET['limite'])){
+                                $limite = $_GET['limite'];
+                            }else{
+                                $limite = 3;
+                            }
+
+                            $inicio = ((int)$pagina - 1) * (int)$limite;
+                            $final .= " LIMIT $inicio,$limite ";
+                        }else{
+                            $this->view->response("Pagina invalida,por favor seleccione un valor numerico",400);
+                            return;
+                        }
                     }
-                }else{
-                    $this->view->response("Por favor seleccione un campo y orden adecuado",400);
+                }else {
+                    $this->view->response("Campo incorrecto,seleccione un valor del dominio.",400);
                     return;
                 }
-            }else if(isset($_GET['campo'])&&isset($_GET['valor'])){
-                if(in_array($_GET['campo'],$camposProductos) && !empty($_GET['valor'])){
-                    $atributo = $_GET['campo'];
-                    $valor = $_GET['valor'];
-                    $concat = "WHERE $atributo = '$valor'";
+
+            }else if(isset($_GET['ordenPor'])&& isset($_GET['orden'])){
+
+                if(in_array(($_GET['ordenPor']),$this->camposProductos)){
+                    $ordenPor = $_GET['ordenPor'];
                     
-                    $productos = $this->model->obtenerProductosOrdenado($concat);
-                    if($productos){
-                        $this->view->response($productos,200);
-                        return;
+                    if(in_array($_GET['orden'],$ordenes)){
+                        $orden = $_GET['orden'];
                     }
                     else{
-                        $this->view->response("No se ha encontrado resultados asociados a esos valores",404);
-                        return;
+                        $orden = "ASC";
                     }
+
+                    $final = "ORDER BY $ordenPor $orden ";
+
+                    if(isset($_GET['pagina'])){
+                        if(is_numeric($_GET['pagina'])){
+                            $pagina = $_GET['pagina'];
+
+                            if(isset($_GET['limite']) && is_numeric($_GET['limite'])){
+                                $limite = $_GET['limite'];
+                            }else{
+                                $limite = 3;
+                            }
+
+                            $inicio = ((int)$pagina - 1) * (int)$limite;
+                            $final .= "LIMIT $inicio,$limite ";
+                        }else{
+                            $this->view->response("Pagina invalida,por favor seleccione un valor numerico",400);
+                            return;
+                        }
+                    }     
                 }else{
-                    $this->view->response("Completa correctamente el endpoint",400);
+                    $this->view->response("ordenPor invalido,por favor seleccione uno adecuado",400);
                     return;
                 }
+
+                
+
             }else if(isset($_GET['pagina'])){
+
                 if(is_numeric($_GET['pagina'])){
                     $pagina = $_GET['pagina'];
-                    if(isset($_GET['limite']) && is_numeric($_GET['limite'])){
+                    
+                
+                    if(isset($_GET['limite'])){
                         $limite = $_GET['limite'];
                     }else{
                         $limite = 3;
                     }
 
-                    $inicio = ((int)$pagina - 1) * (int)$limite;
-                    $concat = "LIMIT $inicio,$limite";
+                    $inicio = ((int)$pagina - 1) * ((int)$limite);
+                    $final .= "LIMIT $inicio,$limite ";
+                }else{
+                    $this->view->response("Pagina invalida,por favor seleccione un valor numerico",400);
+                    return;
+                }
 
-                    $productos = $this->model->obtenerProductosOrdenado($concat);
-                    $this->view->response($productos,200);
-                    return;
-                }else{
-                    $this->view->response("Debe seleccionar un valor numerico",400);
-                    return;
-                }
             }else{
-                $productos = $this->model->obtenerProductos();
-                if($productos){
-                    $this->view->response($productos,200);
-                    return;
-                }else{
-                    $this->view->response("No hay elementos",404);
-                    return;
-                }
+                $final = "";
             }
+
+            $final .= ";";
+
+            $productos = $this->model->obtenerProductosOrdenado($final);
+            
+            if($productos){
+                $this->view->response($productos,200);
+                return;
+            }else{
+                $this->view->response("No se han encontrado productos relacionados con su busqueda",404);
+                return;
+            }
+
         }else{
             if($params[':ID']){
                 $id = $params[':ID'];
@@ -116,13 +197,18 @@ class ProductosApiController extends ApiController{
             $precio = $body->precio;
             $marca = $body->marca;
             $categoria = $body->id_categoria;
+            if($body->imagen){
+                $img = $body->imagen;
+            }else{
+                $img = null;
+            }
 
             if(empty($nombre)||empty($descripcion)||empty($precio)||empty($categoria)||empty($marca)){
                 $this->view->response('Por favor,complete todo los campos',400);
                 return;
             }else{
 
-                $id = $this->model->agregarProducto($nombre,$descripcion,$precio,$marca,$categoria,null);
+                $id = $this->model->agregarProducto($nombre,$descripcion,$precio,$marca,$categoria,$img);
 
                 $ultimoCreado = $this->model->obtenerUnProductoPorId($id);
                 $this->view->response($ultimoCreado, 201);

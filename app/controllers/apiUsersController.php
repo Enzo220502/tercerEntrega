@@ -13,7 +13,7 @@ class UserApiController extends ApiController{
         $this->model = new UsersModel();
         $this->helper = new AuthHelper();
     }
-
+    
     function obtenerToken($params = []) {
         $basic = $this->helper->obtenerAuthHeaders();
 
