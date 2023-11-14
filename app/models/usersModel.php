@@ -9,12 +9,5 @@ class UsersModel extends Model{
         $res = $query->fetch(PDO::FETCH_OBJ);
         return $res;
     }
-
-    public function registrar($nombre,$clave){
-        $query = $this->db->prepare("INSERT INTO `usuarios` (nombre_usuario,contraseña) VALUES (?,?)");
-        $query->execute([$nombre,$clave]);
-        return $query;
-    }
-
 }
 ?>

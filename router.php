@@ -17,7 +17,7 @@ $router = new Router();
     
     $router->addRoute('productos/:ID','DELETE', 'ProductosApiController', 'borrar');
 
-    $router->addRoute('user/token'   , 'GET'  , 'UserApiController'     , 'obtenerToken'   );
+    $router->addRoute('auth/token'   , 'GET'  , 'UserApiController'     , 'obtenerToken'   );
 
-$router->route($_GET['resource'], $_SERVER['REQUEST_METHOD']);
+    $router->route($_GET['resource'], $_SERVER['REQUEST_METHOD']);
 ?>
