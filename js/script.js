@@ -1,7 +1,7 @@
 "use stict"
 addEventListener("DOMContentLoaded",obtenerProductos);
-const URL = "http://186.136.81.128:80/api/productos/";
-const URLC = "http://186.136.81.128:80/api/categorias/";
+const URL = "api/productos/";
+const URLC = "api/categorias/";
 
 let localProds = [];
 let localCats = [];
