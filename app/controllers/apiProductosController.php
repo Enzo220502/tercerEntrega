@@ -97,8 +97,12 @@ class ProductosApiController extends ApiController{
             
             $consultaFinal = $parcialCampo.$ordenPorParcial.$paginadoParcial; //PREPARO : WHERE nombre = 'valor' ORDER BY precio ASC LIMIT 1,3
 
-            $productos = $this->model->obtenerOrdenado($consultaFinal);
-            
+            if($consultaFinal != ""){
+                $productos = $this->model->obtenerOrdenado($consultaFinal);
+            }else{
+                $productos = $this->model->obtenerProductos();
+            }
+
             if($productos){
                 $this->view->response($productos,200);
                 return;
@@ -106,7 +110,6 @@ class ProductosApiController extends ApiController{
                 $this->view->response("No se han encontrado productos relacionados con su busqueda",404);
                 return;
             }
-
             
         }else{
             if($params[':ID']){

@@ -2,6 +2,7 @@
     require_once 'app/views/apiView.php';
     
     abstract class ApiController {
+        
         protected $view;
         private $data;
         
