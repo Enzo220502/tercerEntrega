@@ -11,6 +11,6 @@
     RewriteRule ^api/(.*)$ router.php?resource=$1 [QSA,L]
 </IfModule>
 
-Header always set Access-Control-Allow-Origin "https://tu-usuario.github.io"
+Header always set Access-Control-Allow-Origin "https://enzo220502.github.io/tercerEntrega/"
 Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT"
 Header always set Access-Control-Allow-Headers "X-Requested-With, content-type"
