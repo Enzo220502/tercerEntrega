@@ -76,7 +76,11 @@ class ProductosApiController extends ApiController{
             if(isset($_GET['pagina'])){
 
                 if(is_numeric($_GET['pagina'])){
-                    $pagina = $_GET['pagina'];
+                    if($_GET['pagina']<=0){
+                        $pagina = 1;
+                    }else{
+                        $pagina = $_GET['pagina'];
+                    }
 
                     if(isset($_GET['limite'])){
                         $limite = $_GET['limite'];
